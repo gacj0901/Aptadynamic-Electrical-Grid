@@ -1,7 +1,7 @@
 import sys, itertools, json
-from aptadynamic_vpa import (load_bpa, automatic_only, cascades,
+from aptadynamic_eg import (load_bpa, automatic_only, cascades,
                              omega_series, project, precursor_enrichment)
-from aptadynamic_vpa.projection import ProjectionConfig
+from aptadynamic_eg.projection import ProjectionConfig
 
 df = automatic_only(load_bpa(sys.argv[1]))
 ev = cascades(df)

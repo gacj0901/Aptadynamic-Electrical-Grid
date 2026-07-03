@@ -1,5 +1,5 @@
 [project]
-name = "aptadynamic-vpa"
+name = "Aptadynamic-Electrical-Grid"
 version = "0.1.0"
 description = "Aptadynamic VPA: PRAMA projection over BPA outage observables"
 requires-python = ">=3.10"

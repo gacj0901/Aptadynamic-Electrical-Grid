@@ -1,8 +1,8 @@
 import sys
 import numpy as np
 import pandas as pd
-from aptadynamic_vpa import load_bpa, automatic_only, cascades, omega_series, project
-from aptadynamic_vpa.projection import ProjectionConfig
+from aptadynamic_eg import load_bpa, automatic_only, cascades, omega_series, project
+from aptadynamic_eg.projection import ProjectionConfig
 
 BIN_S = 3600
 

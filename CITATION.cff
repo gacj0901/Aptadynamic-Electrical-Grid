@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+title: "Aptadynamic-Electrical-Grid: PRAMA Protokol over BPA transmission outage data"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: "C.J."
+    given-names: "Gerardo A."
+repository-code: "https://github.com/gacj0901/Aptadynamic-Electrical-Grid"
+abstract: >
+  Domain-independent projection protocol (PRAMA) validated on BPA and NYISO
+  transmission outage data. Latent-collapse periods discriminate conditional
+  cascade severity x16 (BPA) and x1.9 (NYISO) versus a causal Markovian
+  baseline of x3.2 at equal alert budget.
+license: AGPL-3.0
