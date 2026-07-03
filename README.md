@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Aptadynamic-Electrical-Grid (Viability Power Administration)
+=======
+# Aptadynamic-VPA (Viability Power Administration)
+>>>>>>> 7b888f7cb69ba0d484dc8d6b5edfc38cbced2542
 
 **G.A.C.J.** | ORCID: 0009-0009-5649-1359
 Copyright © 2026 G.A.C.J.
@@ -113,7 +117,7 @@ python scripts/sweep.py         data/dobson_bpa/outagesBPA.csv   # parameter swe
 π implements the aptadynamic framework: a formal theory of structural
 viability generalizing Aubin viability theory with a genuine memory kernel
 and an endogenous, history-contracted threshold. Full axiomatization in the
-mathematical corpus (see the `aptadynamik` project root). Its conceptual
+mathematical corpus (https://doi.org/10.5281/zenodo.20369325). Its conceptual
 origin is a published ontological work; none of it is required to run or
 extend this repository.
 
