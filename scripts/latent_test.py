@@ -10,7 +10,7 @@ df = automatic_only(load_bpa(sys.argv[1]))
 print(f"--- CONTROL DE CONTAMINACIÓN: Eventos tras filtrar = {len(df)} ---")
 ev = cascades(df)
 om = omega_series(df)
-pr = project(om, ProjectionConfig(tau_memory=720, driver="intensity"))
+pr = project(om, ProjectionConfig(tau_memory=168))
 
 sizes = ev.groupby("cascade_id").size()
 t_start = ev.groupby("cascade_id")["t_out"].min()

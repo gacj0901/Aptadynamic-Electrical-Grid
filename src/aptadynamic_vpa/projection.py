@@ -28,33 +28,40 @@ class ProjectionConfig:
     lambda_erosion: float = 0.02
     lambda_recovery: float = 0.005
     lambda_min: float = 0.1
-    theta_scale: float = 1.0
-    baseline_win: int = 24 * 90        # bins: baseline móvil de Δ, ~90 días
-    g_smooth: int = 24                 # suavizado de D⁺M
+    theta_scale: float = 2.0
+    #baseline_win: int = 24 * 90        # bins: baseline móvil de Δ, ~90 días
+    g_smooth: int = 24  
+    kappa: float = 0.05               # suavizado de D⁺M
     #driver: str = "load"
-    driver: str = "intensity"
+    #driver: str = "intensity"
     #driver: str = "severity"
 
 def project(omega: pd.DataFrame, cfg: ProjectionConfig = ProjectionConfig()) -> pd.DataFrame:
-    s = omega[cfg.driver].to_numpy(dtype=float)
-    n = len(s)
+    from .omega import expected_profile
 
-    nz = s[s > 0]
-    scale = np.median(nz) if len(nz) else 1.0
-    delta = s / max(scale, 1e-9)
+    obs = omega["intensity"].to_numpy(dtype=float)
+    exp_ = expected_profile(omega)
+    valid = ~np.isnan(exp_)
+    delta = np.zeros(len(obs))
+    delta[valid] = np.abs(obs[valid] - exp_[valid]) / (exp_[valid] + 1.0)
 
+    n = len(delta)
     a = np.exp(-1.0 / cfg.tau_memory)
     xi = np.zeros(n)
     lam = np.full(n, cfg.lambda_eq)
+    A = np.zeros(n)
+    theta = np.zeros(n)
+    theta[0] = cfg.theta_scale * cfg.lambda_eq
+
     for i in range(1, n):
         xi[i] = a * xi[i - 1] + (1 - a) * delta[i]
-        erosion = cfg.lambda_erosion * xi[i]
-        recovery = cfg.lambda_recovery * (cfg.lambda_eq - lam[i - 1])
-        lam[i] = np.clip(lam[i - 1] - erosion + recovery, cfg.lambda_min, cfg.lambda_eq)
+        excess = max(xi[i] - theta[i - 1], 0.0)
+        A[i] = A[i - 1] + excess
+        d_lam = -cfg.kappa * excess + cfg.lambda_recovery * (cfg.lambda_eq - lam[i - 1])
+        lam[i] = np.clip(lam[i - 1] + d_lam, cfg.lambda_min, cfg.lambda_eq)
+        theta[i] = cfg.theta_scale * lam[i]
 
-    theta = cfg.theta_scale * lam
     m = theta - xi
-
     g = np.gradient(pd.Series(m).rolling(cfg.g_smooth, min_periods=1).mean().to_numpy())
 
     out = omega.copy()
@@ -64,8 +71,8 @@ def project(omega: pd.DataFrame, cfg: ProjectionConfig = ProjectionConfig()) -> 
     out["theta"] = theta
     out["M"] = m
     out["G"] = g
-    out["latent_collapse"] = (omega["intensity"].to_numpy() > 0) & (m >= 0) & (g < 0)
-    out["stratum"] = stratify(m, g)
+    out["latent_collapse"] = (obs > 0) & (m >= 0) & (g < 0) & valid
+    out["stratum"] = np.where(valid, stratify(m, g), 1)
     return out
 
 

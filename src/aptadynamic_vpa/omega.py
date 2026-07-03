@@ -65,3 +65,29 @@ def omega_series(df: pd.DataFrame, bin_s: int = BIN_S) -> pd.DataFrame:
             "severity": severity,
         }
     )
+def expected_profile(om: pd.DataFrame, min_hist: int = 24 * 30) -> np.ndarray:
+    t = pd.to_datetime(om["t"], unit="s", utc=True)
+    hour = t.dt.hour.to_numpy()
+    month = t.dt.month.to_numpy()
+    inten = om["intensity"].to_numpy(dtype=float)
+
+    n = len(inten)
+    expected = np.zeros(n)
+    sums = np.zeros((12, 24))
+    counts = np.zeros((12, 24))
+    global_sum, global_n = 0.0, 0
+
+    for i in range(n):
+        h, mo = hour[i], month[i] - 1
+        if counts[mo, h] >= 10:
+            expected[i] = sums[mo, h] / counts[mo, h]
+        elif global_n >= min_hist:
+            expected[i] = global_sum / global_n
+        else:
+            expected[i] = np.nan
+        sums[mo, h] += inten[i]
+        counts[mo, h] += 1
+        global_sum += inten[i]
+        global_n += 1
+
+    return expected
