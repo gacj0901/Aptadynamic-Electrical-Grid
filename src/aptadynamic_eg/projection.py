@@ -33,7 +33,7 @@ class ProjectionConfig:
     g_smooth: int = 24  
     kappa: float = 0.05               # suavizado de D⁺M
     #driver: str = "load"
-    #driver: str = "intensity"
+    driver: str = "intensity"
     #driver: str = "severity"
 
 def project(omega: pd.DataFrame, cfg: ProjectionConfig = ProjectionConfig()) -> pd.DataFrame:

@@ -10,8 +10,9 @@ df = automatic_only(load_bpa(sys.argv[1]))
 print(f"--- CONTROL DE CONTAMINACIÓN: Eventos tras filtrar = {len(df)} ---")
 ev = cascades(df)
 om = omega_series(df)
-pr = project(om, ProjectionConfig(tau_memory=168))
-
+#pr = project(om, ProjectionConfig(tau_memory=168))
+#pr = project(om, ProjectionConfig(tau_memory=336))
+pr = project(om, ProjectionConfig(tau_memory=720))
 sizes = ev.groupby("cascade_id").size()
 t_start = ev.groupby("cascade_id")["t_out"].min()
 t0 = pr["t"].iloc[0]
@@ -62,3 +63,4 @@ for name, mask in [("ambos", both), ("solo_latente", only_latent),
                    ("solo_trivial", only_triv), ("ninguno", neither)]:
     x = s[mask]
     print(f"{name:>13}: n={len(x):5d}  p(size>=4)={(x>=4).mean():.3f}")
+    print(f"latente % tiempo: {pr['latent_collapse'].mean()*100:.1f}%")
