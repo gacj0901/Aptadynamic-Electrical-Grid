@@ -137,7 +137,7 @@ python scripts/sweep.py         data/dobson_bpa/outagesBPA.csv   # memory-scale 
 π implements the aptadynamic framework: a formal theory of structural viability
 generalizing Aubin viability theory with a genuine memory kernel and an
 endogenous, history-contracted threshold. The mathematical corpus is public
-(Zenodo, DOI 10.5281/zenodo.20369325); the normative protocol specification and
+(Zenodo, DOI https://doi.org/10.5281/zenodo.21270506); the normative protocol specification and
 the discipline overview live in the project's root repositories. None of the
 underlying theory is required to run or extend this repository.
 
