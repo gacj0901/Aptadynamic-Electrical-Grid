@@ -25,6 +25,13 @@ def test_epoch_seconds_preserves_missing_and_drops_invalid(tmp_path):
     assert loaded["t_out"].max() - loaded["t_out"].min() == 3600
 
 
+def test_mathematica_absolute_time_is_converted_to_unix_epoch():
+    values = pd.Series([3124217220, 3124217280])
+    out = _epoch_seconds(values, numeric_epoch="mathematica_1900")
+    assert out.tolist() == [915228420, 915228480]
+    assert pd.to_datetime(out.iloc[0], unit="s", utc=True).year == 1999
+
+
 def test_evaluation_is_strictly_pre_cascade_and_valid_only():
     proj = pd.DataFrame({"t": np.arange(8) * 3600, "valid": [False, True, True, True, True, True, True, True],
                          "latent_collapse": [False, False, True, False, True, False, False, False]})
