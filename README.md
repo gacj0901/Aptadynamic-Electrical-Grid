@@ -54,7 +54,7 @@ This is the state whose severity-conditioning power the analysis evaluates.
 
 The figures below are retained only as provenance. They used the 0.1.0 batch
 kernel and/or superseded evaluation procedures and are not current empirical
-claims. Regenerate `results/reproduction_*.json` with 0.2.0 before reporting
+claims. Regenerate `results/reproduction_*.json` with 0.2.1 before reporting
 new figures.
 
 ### BPA (1999–2017, 14,258 automatic outages)
@@ -118,8 +118,8 @@ of particular cascading sequences are reported.
 ```
 pip install -e .
 
-python scripts/reproduce_bpa.py data/dobson_bpa/outagesBPA.csv --domain BPA --calibration-id bpa_calib_1999_2003_v1 --calibration-end 2004-01-01T00:00:00Z --output-prefix results/reproduction_bpa
-python scripts/reproduce_bpa.py data/dobson_nyiso/outagesNYISO.csv --domain NYISO --calibration-id nyiso_calib_2008_2010_v1 --calibration-end 2011-01-01T00:00:00Z --output-prefix results/reproduction_nyiso
+python scripts/reproduce_bpa.py data/dobson_bpa/outagesBPA.csv --domain BPA --calibration-id bpa_calib_1999_2003_v1 --induction-epoch grid_induction_v1 --calibration-end 2004-01-01T00:00:00Z --output-prefix results/reproduction_bpa
+python scripts/reproduce_bpa.py data/dobson_nyiso/outagesNYISO.csv --domain NYISO --calibration-id nyiso_calib_2008_2010_v1 --induction-epoch grid_induction_v1 --calibration-end 2011-01-01T00:00:00Z --output-prefix results/reproduction_nyiso
 ```
 
 ## Methodological discipline

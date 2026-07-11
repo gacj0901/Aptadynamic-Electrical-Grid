@@ -28,7 +28,7 @@ Historical numerical claims from kernel 0.1.0 require causal revalidation.
 ### C4. Informational Density
 The variance of Ξ over the characteristic memory timescale \( \tau_m \) must substantially exceed baseline stochastic noise.  
 - BPA and NYISO density diagnostics are exploratory and must be regenerated
-  under kernel 0.2.0 before quantitative comparison.
+  under kernel 0.2.1 before quantitative comparison.
 
 ### C5. Bipartite Outcome
 The domain must distinguish **occurrence** (\( Y_o \)) from **severity** (\( Y_s \)) separately.  
@@ -48,5 +48,5 @@ PRAMA warm-up is consumed inside the same calibration partition.
 ### Key Empirical Lesson
 
 BPA and NYISO use the same universal projection kernel \( \pi \). Whether either
-record supports an empirical claim is determined only by the reproducible 0.2.0
+record supports an empirical claim is determined only by the reproducible 0.2.1
 outputs, not by historical figures.

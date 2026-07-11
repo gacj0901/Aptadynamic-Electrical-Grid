@@ -12,7 +12,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import prama_protokol
-from prama_protokol.compliance import check_degeneration
+from prama_protokol.compliance import (
+    check_degeneration,
+    check_density,
+    check_inductive_ratio,
+    check_memory_ratio,
+)
 
 from aptadynamic_eg import automatic_only, cascades, load_bpa, omega_series
 from aptadynamic_eg.evaluation import (
@@ -21,6 +26,7 @@ from aptadynamic_eg.evaluation import (
     severity_statistics,
 )
 from aptadynamic_eg.projection import ProjectionConfig, project
+from aptadynamic_eg.omega import expected_profile
 
 
 def git_sha(path: Path) -> str | None:
@@ -28,6 +34,17 @@ def git_sha(path: Path) -> str | None:
         return subprocess.check_output(
             ["git", "-C", str(path), "rev-parse", "HEAD"], text=True
         ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def git_dirty(path: Path) -> bool | None:
+    try:
+        return bool(
+            subprocess.check_output(
+                ["git", "-C", str(path), "status", "--porcelain"], text=True
+            ).strip()
+        )
     except (OSError, subprocess.CalledProcessError):
         return None
 
@@ -115,6 +132,17 @@ def main() -> None:
     parser.add_argument("--n-bootstrap", type=int, default=10_000)
     parser.add_argument("--bootstrap-seed", type=int, default=20260712)
     parser.add_argument("--tie-seed", type=int, default=20260711)
+    parser.add_argument(
+        "--smoke-test",
+        action="store_true",
+        help=(
+            "allow a non-frozen kernel version for a non-confirmatory operational check"
+        ),
+    )
+    parser.add_argument("--induction-epoch", required=True,
+                        help="C7 identifier for the frozen induction estimator")
+    parser.add_argument("--diagnostic-n-null", type=int, default=200,
+                        help="permutations for informational C4 density")
     parser.add_argument("--calibration-end", required=True,
                         help="Frozen calendar-year UTC boundary (exclusive)")
     parser.add_argument("--calibration-id", required=True,
@@ -126,8 +154,15 @@ def main() -> None:
         parser.error("--n-bootstrap must be positive (10,000 default)")
     if min(args.seed, args.bootstrap_seed, args.tie_seed) < 0:
         parser.error("all seeds must be non-negative integers")
-    if prama_protokol.__version__ != "0.2.0":
-        raise RuntimeError(f"requires prama-protokol 0.2.0, found {prama_protokol.__version__}")
+    if args.diagnostic_n_null < 1:
+        parser.error("--diagnostic-n-null must be positive")
+    frozen_kernel = "0.2.1"
+    version_allowed = prama_protokol.__version__ == frozen_kernel or args.smoke_test
+    if not version_allowed:
+        raise RuntimeError(
+            f"requires prama-protokol {frozen_kernel}; --smoke-test permits a "
+            f"non-frozen version, found {prama_protokol.__version__}"
+        )
 
     events_raw = load_bpa(args.dataset)
     events_filtered = automatic_only(events_raw)
@@ -218,9 +253,44 @@ def main() -> None:
         last_projection["delta"].to_numpy()[calibration_end_idx:],
         om[cfg.driver].to_numpy(dtype=float)[calibration_end_idx:],
     )
+    observed = om[cfg.driver].to_numpy(dtype=float)
+    expected = expected_profile(
+        om,
+        driver=cfg.driver,
+        min_context_count=cfg.min_context_count,
+        min_hist=cfg.min_hist,
+    )
+    timestamps = pd.to_datetime(om["t"], unit="s", utc=True)
+    induction_context = (
+        timestamps.dt.month.to_numpy(dtype=np.int16) * 100
+        + timestamps.dt.hour.to_numpy(dtype=np.int16)
+    )
+    kernel_cfg = cfg.kernel_config()
+    informational_diagnostics = {
+        "status": "informational_no_preregistered_thresholds",
+        "induction_epoch": args.induction_epoch,
+        "RHO_I": {
+            "calibration": check_inductive_ratio(
+                observed[:calibration_end_idx], expected[:calibration_end_idx]
+            ),
+            "evaluation": check_inductive_ratio(
+                observed[calibration_end_idx:], expected[calibration_end_idx:]
+            ),
+        },
+        "C4": check_density(
+            last_projection.iloc[:calibration_end_idx],
+            kernel_cfg,
+            context=induction_context[:calibration_end_idx],
+            n_null=args.diagnostic_n_null,
+            seed=args.seed,
+        ),
+        "MEM": check_memory_ratio(kernel_cfg, calibration_end_idx),
+    }
     primary_bootstrap = analyses["activity"]["paired_cascade_bootstrap"]
     c3_both_pass = bool(c3_calibration["passed"] and c3_evaluation["passed"])
-    if not c3_both_pass:
+    if args.smoke_test:
+        claim_classification = "smoke_test_non_confirmatory"
+    elif not c3_both_pass:
         claim_classification = "invalid_for_confirmatory_claim_C3_gate_failed"
     elif (primary_bootstrap["observed_contrast"] > 0.0
           and primary_bootstrap["p_one_sided_prama_superior"] < 0.01):
@@ -228,11 +298,31 @@ def main() -> None:
     else:
         claim_classification = "confirmatory_criterion_not_met"
     report = {
-        "schema_version": 1, "domain": args.domain,
+        "schema_version": 2, "domain": args.domain,
+        "run_mode": "smoke_test" if args.smoke_test else "confirmatory",
+        "confirmatory_eligible": not args.smoke_test,
         "environment": {"python": platform.python_version(), "pandas": pd.__version__,
                         "numpy": np.__version__, "prama_protokol": prama_protokol.__version__},
         "commits": {"electrical_grid": git_sha(root), "prama_protokol": git_sha(prama_root)},
-        "kernel_config": asdict(cfg), "seed": args.seed,
+        "working_tree_dirty": {
+            "electrical_grid": git_dirty(root),
+            "prama_protokol": git_dirty(prama_root),
+        },
+        "kernel_config": asdict(kernel_cfg),
+        "observation_interface": {
+            "observable": cfg.driver,
+            "normalization": "identity on hourly outage intensity",
+            "sigma_op_modes": ["activity", "always_valid"],
+        },
+        "induction_config": {
+            "induction_epoch": args.induction_epoch,
+            "family": "strict-past conditional mean",
+            "temporal_regime": "expanding",
+            "context": ["UTC month", "UTC hour"],
+            "min_context_count": cfg.min_context_count,
+            "min_hist": cfg.min_hist,
+        },
+        "seed": args.seed,
         "n_permutations": args.n_permutations,
         "n_bootstrap": args.n_bootstrap,
         "bootstrap_seed": args.bootstrap_seed,
@@ -275,6 +365,7 @@ def main() -> None:
             "evaluation": c3_evaluation,
             "both_pass": c3_both_pass,
         },
+        "informational_diagnostics": informational_diagnostics,
         "primary_claim": {
             "mode": "activity",
             "sensitivity_mode": "always_valid",

@@ -9,5 +9,5 @@ repository-code: "https://github.com/gacj0901/Aptadynamic-Electrical-Grid"
 abstract: >
   Reproducible software for causal PRAMA projection and sensitivity analysis
   on BPA and NYISO transmission outage records. Empirical estimates must be
-  regenerated with the causal 0.2.0 kernel before being treated as current.
+  regenerated with the causal 0.2.1 kernel before being treated as current.
 license: AGPL-3.0
