@@ -8,10 +8,8 @@ dynamics from Markovian (branching-process) dynamics:
   1. Refined Zipf fit using Clauset-Shalizi-Newman (CSN) MLE method,
      with optimal x_min selection via Kolmogorov-Smirnov distance.
 
-  2. Hurst exponent of the outage time series via R/S and DFA methods.
-     H = 0.5 means no long-range memory (Markovian).
-     H > 0.5 means positive persistence (long-range memory).
-     H < 0.5 means anti-persistence.
+  2. Exploratory Hurst/DFA summaries of long-range dependence. Hurst does
+     not certify or refute the Markov property by itself.
 
   3. Characterization of extreme events: cascades in the top 1% of size
      and their precursor patterns (outage counts in 24h, 72h, 1 week
@@ -402,7 +400,7 @@ def main() -> int:
         print(f"  Number of window scales:   {dfa_result['n_windows']}")
     
     print("\nInterpretation:")
-    print("  H = 0.5  : no long-range memory (Markovian, branching-process compatible)")
+    print("  Hurst/DFA summarize long-range dependence; they do not test Markovity.")
     print("  H > 0.5  : long-range positive correlations (persistent memory)")
     print("  H < 0.5  : anti-persistence (mean-reverting)")
     
@@ -410,11 +408,11 @@ def main() -> int:
     if H_main is not None:
         if H_main > 0.55:
             print(f"\n  >>> H = {H_main:.3f} indicates LONG-RANGE MEMORY <<<")
-            print(f"  >>> Markovian models are INSUFFICIENT for this dataset <<<")
+            print("  >>> Exploratory long-range dependence; not a Markov test <<<")
         elif H_main < 0.45:
             print(f"\n  >>> H = {H_main:.3f} indicates anti-persistence <<<")
         else:
-            print(f"\n  >>> H = {H_main:.3f} is consistent with Markovian dynamics <<<")
+            print(f"\n  >>> H = {H_main:.3f}; H alone gives no conclusion about Markovity <<<")
     
     # =================================================================
     # 3. Extreme events

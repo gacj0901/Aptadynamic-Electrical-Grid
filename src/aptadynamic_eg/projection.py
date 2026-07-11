@@ -36,8 +36,18 @@ class ProjectionConfig:
         )
 
 
-def project(omega: pd.DataFrame, cfg: ProjectionConfig | None = None) -> pd.DataFrame:
-    """Project omega onto Gamma using the imported ``prama_protokol`` kernel."""
+def project(
+    omega: pd.DataFrame,
+    cfg: ProjectionConfig | None = None,
+    sigma_op_mode: str = "activity",
+) -> pd.DataFrame:
+    """Project omega with an explicit observation-operator validity mode.
+
+    ``activity`` preserves the historical ``intensity > 0`` operator. At a
+    cascade-start bin this was tautological; evaluation now occurs at ``idx-1``,
+    where it requires activity in the preceding hour. ``always_valid`` sets
+    sigma_op true exactly where a causal expectation exists.
+    """
 
     if cfg is None:
         cfg = ProjectionConfig()
@@ -53,10 +63,18 @@ def project(omega: pd.DataFrame, cfg: ProjectionConfig | None = None) -> pd.Data
         min_context_count=cfg.min_context_count,
         min_hist=cfg.min_hist,
     )
-    gamma = prama_project(obs, expected, cfg.kernel_config(), sigma_op=obs > 0)
+    valid_expectation = ~np.isnan(expected)
+    if sigma_op_mode == "activity":
+        sigma_op = omega["intensity"].to_numpy(dtype=float) > 0
+    elif sigma_op_mode == "always_valid":
+        sigma_op = valid_expectation
+    else:
+        raise ValueError("sigma_op_mode must be 'activity' or 'always_valid'")
+    gamma = prama_project(obs, expected, cfg.kernel_config(), sigma_op=sigma_op)
 
     out = omega.copy()
     for col in ("delta", "xi", "lambda", "theta", "M", "G", "latent_collapse", "stratum", "valid"):
         out[col] = gamma[col].to_numpy()
     out["driver"] = cfg.driver
+    out["sigma_op_mode"] = sigma_op_mode
     return out

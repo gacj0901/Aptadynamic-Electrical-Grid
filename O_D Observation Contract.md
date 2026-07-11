@@ -22,21 +22,31 @@ The original NYISO implementation violated this by using a constant global media
 \[
 \Delta_t = \frac{|O_t - \widehat{O}_t|}{\widehat{O}_t + 1}
 \]
-Violation of C2 necessarily implies violation of C3: the tension accumulator Ξ begins to accumulate raw activity instead of structural deviation. This was the root cause of the initial negative result in NYISO (ratio 0.55).
+Violation of C2 can make Ξ track raw activity instead of structural deviation.
+Historical numerical claims from kernel 0.1.0 require causal revalidation.
 
 ### C4. Informational Density
 The variance of Ξ over the characteristic memory timescale \( \tau_m \) must substantially exceed baseline stochastic noise.  
-- BPA satisfies this comfortably.  
-- NYISO satisfies it only marginally (hence the corrected ratio of 1.90 instead of ~16).
+- BPA and NYISO density diagnostics are exploratory and must be regenerated
+  under kernel 0.2.0 before quantitative comparison.
 
 ### C5. Bipartite Outcome
 The domain must distinguish **occurrence** (\( Y_o \)) from **severity** (\( Y_s \)) separately.  
 PRAMA only guarantees improved discrimination of conditional severity \( P(Y_s \mid Y_o) \). Occurrence forecasting remains the responsibility of causal Markovian baselines.
 
+### C6. Stationary Evaluation Instrument
+
+Causality is necessary but not sufficient. Comparison thresholds MUST be fitted
+once on a declared, versioned calibration partition that is temporally disjoint
+from evaluation, then frozen for the entire aggregated evaluation period.
+Boundary ties use a declared seeded random rule. Any recalibration starts a new
+calibration epoch (`calib_v1`, `calib_v2`, ...) and every readout carries that ID.
+PRAMA warm-up is consumed inside the same calibration partition.
+
 ---
 
 ### Key Empirical Lesson
 
-Both successful BPA and corrected NYISO satisfy **C1–C5** while using the **same** universal projection kernel \( \pi \).  
-
-The original NYISO failure was a clear violation of **C2 → C3**. Correcting the observation operator (Δ) was sufficient to reverse the sign, demonstrating the robustness of the kernel when the contract is respected.
+BPA and NYISO use the same universal projection kernel \( \pi \). Whether either
+record supports an empirical claim is determined only by the reproducible 0.2.0
+outputs, not by historical figures.

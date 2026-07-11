@@ -44,19 +44,24 @@ unchanged from the PRAMA Protokol reference, not reimplemented here.
 | λ(t) | eroded by excess (Ξ−Θ)⁺, bounded recovery; recovery never reduces Ξ | Remaining absorption capacity |
 | Θ(λ) | θ_s · λ, contracts as excess accumulates | Endogenous threshold, not a fixed cutoff |
 | M(t) | Θ − Ξ | Viability margin |
-| G(t) | D⁺⟨M⟩_w | Smoothed margin trend |
+| G(t) | trailing mean of M, then G[0]=0 and G[t]=smooth_M[t]-smooth_M[t-1] | Strictly causal margin trend |
 
 **Latent collapse:** ω(t) > 0 ∧ M ≥ 0 ∧ G < 0 — the system operates with
 positive but shrinking margin. A direction-based flag, not a level exceedance.
 This is the state whose severity-conditioning power the analysis evaluates.
 
-## Empirical Results
+## Historical results from 0.1.0 — not causally revalidated
+
+The figures below are retained only as provenance. They used the 0.1.0 batch
+kernel and/or superseded evaluation procedures and are not current empirical
+claims. Regenerate `results/reproduction_*.json` with 0.2.0 before reporting
+new figures.
 
 ### BPA (1999–2017, 14,258 automatic outages)
 
 - Conditional severity: P(size ≥ 4 | cascade occurs) = **0.096** inside
   latent-collapse periods vs **0.003** outside — **enrichment ratio 28.75**
-  (label-shuffle permutation, p < 0.001; null 95th percentile 1.17).
+  (historical iid label shuffle; superseded by the circular-shift null).
 - Causal Markovian baseline (trailing intensity, matched alert budget): **3.16**.
 - Memory scale τ = 720 h selected by a reported sweep over {168, 336, 720} h;
   enrichment increases monotonically with memory (16.0 → 23.4 → 28.75) while the
@@ -113,17 +118,23 @@ of particular cascading sequences are reported.
 ```
 pip install -e .
 
-python scripts/run_pipeline.py  data/dobson_bpa/outagesBPA.csv   # full pipeline
-python scripts/latent_test.py   data/dobson_bpa/outagesBPA.csv   # conditional severity + independence partition
-python scripts/baseline_test.py data/dobson_bpa/outagesBPA.csv   # occurrence horizon curve vs Markovian baseline
-python scripts/permtest.py      data/dobson_bpa/outagesBPA.csv   # permutation significance
-python scripts/sweep.py         data/dobson_bpa/outagesBPA.csv   # memory-scale sweep
+python scripts/reproduce_bpa.py data/dobson_bpa/outagesBPA.csv --domain BPA --calibration-id bpa_calib_1999_2003_v1 --calibration-end 2004-01-01T00:00:00Z --output-prefix results/reproduction_bpa
+python scripts/reproduce_bpa.py data/dobson_nyiso/outagesNYISO.csv --domain NYISO --calibration-id nyiso_calib_2008_2010_v1 --calibration-end 2011-01-01T00:00:00Z --output-prefix results/reproduction_nyiso
 ```
 
 ## Methodological discipline
 
-- All baselines strictly causal; a future-leaking baseline found during
-  development was removed before any comparative evaluation.
+- Evaluation is strictly at the hour before cascade start (`idx-1`) and only on
+  valid post-calibration rows. The baseline threshold is fitted once on an
+  externally declared, frozen, versioned cohort; it never drifts during evaluation.
+- Mass at the fixed threshold is handled by a seeded, index-stable randomized
+  tie rule whose acceptance probability exactly closes the calibration budget.
+- PRAMA and baseline are compared with a paired cascade bootstrap at the same
+  evaluation indices and under the same fixed instrument.
+- Both `activity` and `always_valid` sigma modes are reported as a prespecified
+  sensitivity analysis; neither is selected by enrichment.
+- The primary temporal null circularly shifts the complete alert series (10,000
+  seeded replicates by default), preserving autocorrelation and alert blocks.
 - Negative results reported as found (occurrence stays Markovian; the NYISO
   degeneration and its ablation are reported in full).
 - Kernel parameters fixed across domains; per-domain diagnosis targets O_D

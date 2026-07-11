@@ -28,7 +28,10 @@ def _epoch_seconds(values: pd.Series) -> pd.Series:
     if numeric.notna().mean() > 0.95:
         return numeric.astype("Int64")
     parsed = pd.to_datetime(values, errors="coerce", utc=True)
-    return (parsed.astype("int64") // 10**9).astype("Int64")
+    return (
+        (parsed - pd.Timestamp(0, tz="utc"))
+        // pd.Timedelta("1s")
+    ).astype("Int64")
 
 
 def load_bpa(path: str) -> pd.DataFrame:
