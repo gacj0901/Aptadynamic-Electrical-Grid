@@ -91,3 +91,31 @@ def test_h2_drivers_are_registered_as_causal():
     assert DRIVER_SPECS["nyca_load_hourly"]["causal"] is True
     assert DRIVER_SPECS["lbmp_intrahour_std"]["causal"] is True
     assert DRIVER_SPECS["severity"]["causal"] is False
+
+
+def test_h2_physical_channels_are_scale_invariant():
+    index = pd.date_range("2008-01-01T00:00:00Z", periods=1800, freq="h")
+    base = pd.DataFrame(index=index)
+    base["nyca_load_hourly"] = 10_000.0 + 500.0 * np.sin(
+        np.arange(len(index)) / 24
+    )
+    base["lbmp_intrahour_std"] = 5.0 + np.cos(np.arange(len(index)) / 24)
+    base["outage_intensity"] = (np.arange(len(index)) % 17 == 0).astype(float)
+    base["ch-l_valid"] = True
+    base["ch-p_valid"] = True
+    base["ch-f_valid"] = True
+    calibration_end = index[1500]
+    columns = ["delta", "xi", "lambda", "theta", "M", "G", "valid"]
+
+    for channel, raw_column in (
+        ("CH-L", "nyca_load_hourly"),
+        ("CH-P", "lbmp_intrahour_std"),
+    ):
+        reference, _ = normalize_and_project(base, channel, calibration_end)
+        scaled = base.copy()
+        scaled[raw_column] *= 1000.0
+        alternative, _ = normalize_and_project(scaled, channel, calibration_end)
+        pd.testing.assert_frame_equal(
+            reference[columns], alternative[columns], check_exact=False,
+            rtol=0.0, atol=1e-9,
+        )
