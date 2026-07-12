@@ -114,3 +114,12 @@ The inventory uses complete-case support at the native 5-minute grid:
 
 No `[DECISION]` marker in `PREREGISTRATION_G2_SKELETON.md` is resolved by
 this H1 record.
+
+## Erratum — inventory SHA-256 (2026-07-12)
+
+The inventory digest printed above was truncated to 63 characters by a
+transcription error. The complete, reverified SHA-256 of
+`results/g2_data_preflight_inventory.json` is
+`09ab7568ccdcbcb6263e69f5cbfaa1f3dfb82564cf7858c22bc347dd829a5079`
+(64 hexadecimal characters). This correction changes no source, coverage,
+policy, statistic or decision in H1.
