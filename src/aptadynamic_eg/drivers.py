@@ -19,6 +19,20 @@ DRIVER_SPECS = {
             "is known only at restoration — future information"
         ),
     },
+    "nyca_load_hourly": {
+        "causal": True,
+        "note": (
+            "hourly mean of complete-case NYCA load; the NYISO real-time "
+            "publication was knowable at t"
+        ),
+    },
+    "lbmp_intrahour_std": {
+        "causal": True,
+        "note": (
+            "within-hour standard deviation of complete-case real-time zonal "
+            "LBMP publications; knowable at the hourly bin close"
+        ),
+    },
 }
 
 
