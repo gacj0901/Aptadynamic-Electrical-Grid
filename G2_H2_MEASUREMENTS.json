@@ -1,0 +1,189 @@
+{
+  "schema": "AptadynamiK-G2-H2-calibration-measurements/1",
+  "schema_version": 2,
+  "generated_at_utc": "2026-07-12T12:55:56.192161+00:00",
+  "run_mode": "calibration_only_interface_measurement",
+  "confirmatory_eligible": false,
+  "outcomes_accessed": false,
+  "implementation_commit": "688e26f837fe6a43e877fb32dca2c24f306b7d8b",
+  "working_tree_dirty": false,
+  "calibration_id": "nyiso_calib_G2_v1",
+  "calibration_end_exclusive_utc": "2011-01-01T00:00:00Z",
+  "n_null": 1000,
+  "null_seed": 0,
+  "threshold_status": {
+    "rho_I": "informational_no_band_H3_decision",
+    "C4": "informational_no_f_star_H3_decision",
+    "MEM": "minimum_20_closed_in_H2"
+  },
+  "channels": {
+    "CH-L": {
+      "schema_version": 2,
+      "kernel_config": {
+        "tau_memory": 336,
+        "lambda_eq": 1.0,
+        "lambda_recovery": 0.005,
+        "lambda_min": 0.1,
+        "theta_scale": 2.0,
+        "g_smooth": 24,
+        "kappa": 0.05
+      },
+      "interface_config": {
+        "driver": "nyca_load_hourly",
+        "normalization": "L(t) / median_calibration_valid_L",
+        "reference": "18390.729166666664",
+        "q_floor": "919.53645833333326",
+        "min_context_count": 10,
+        "min_hist": 720,
+        "align_utc": true,
+        "sigma_op_semantics": "valid_CH-L_and_load_above_calibration_q_floor",
+        "trailing_days": 1096,
+        "trailing_volatility_window": null
+      },
+      "induction": {
+        "epoch_id": "nyiso_chl_induction_v1",
+        "estimator": "causal_trailing_conditional_mean",
+        "regime": "trailing_1096_days_per_cell",
+        "estimator_hash": "1a5164ce975ed82ebffdd8f28278019a6c15d7cd0e832f7fcd25f7ba1563d695"
+      },
+      "n_calibration_bins": 18947,
+      "n_valid_calibration_bins": 12160,
+      "RHO_I": {
+        "check": "RHO_I inductive ratio",
+        "passed": null,
+        "detail": "rho_I = +0.7868 (INFORMATIONAL: no band declared)",
+        "rho_I": 0.7867936625757861,
+        "band": null
+      },
+      "C4": {
+        "check": "C4 informational density",
+        "passed": null,
+        "detail": "C4_D = 2.852 (stratified permutation null, n_null=1000, seed=0; Var(\u039e)=2.733e-04, null Var q05/q50/q95 = 9.445e-05/9.578e-05/9.732e-05) (INFORMATIONAL: no f_star declared)",
+        "C4_D": 2.8521166462234575,
+        "f_star": null,
+        "n_null": 1000,
+        "seed": 0,
+        "stratified": true
+      },
+      "MEM": {
+        "check": "MEM memory ratio",
+        "passed": true,
+        "detail": "L_cal/tau_K = 56.4, declared min = 20",
+        "ratio": 56.38988095238095,
+        "min_ratio": 20
+      }
+    },
+    "CH-P": {
+      "schema_version": 2,
+      "kernel_config": {
+        "tau_memory": 336,
+        "lambda_eq": 1.0,
+        "lambda_recovery": 0.005,
+        "lambda_min": 0.1,
+        "theta_scale": 2.0,
+        "g_smooth": 24,
+        "kappa": 0.05
+      },
+      "interface_config": {
+        "driver": "lbmp_intrahour_std",
+        "normalization": "log1p(s(t) / median_calibration_valid_s)",
+        "reference": "5.8443441545047223",
+        "q_floor": "919.53645833333326",
+        "min_context_count": 10,
+        "min_hist": 720,
+        "align_utc": true,
+        "sigma_op_semantics": "valid_CH-L_and_load_above_calibration_q_floor",
+        "trailing_days": 1096,
+        "trailing_volatility_window": 1
+      },
+      "induction": {
+        "epoch_id": "nyiso_chp_induction_v1",
+        "estimator": "causal_trailing_conditional_mean",
+        "regime": "trailing_1096_days_per_cell",
+        "estimator_hash": "1a5164ce975ed82ebffdd8f28278019a6c15d7cd0e832f7fcd25f7ba1563d695"
+      },
+      "n_calibration_bins": 18947,
+      "n_valid_calibration_bins": 12161,
+      "RHO_I": {
+        "check": "RHO_I inductive ratio",
+        "passed": null,
+        "detail": "rho_I = +0.1746 (INFORMATIONAL: no band declared)",
+        "rho_I": 0.1745961112958041,
+        "band": null
+      },
+      "C4": {
+        "check": "C4 informational density",
+        "passed": null,
+        "detail": "C4_D = 14.304 (stratified permutation null, n_null=1000, seed=0; Var(\u039e)=7.337e-03, null Var q05/q50/q95 = 4.705e-04/5.125e-04/5.591e-04) (INFORMATIONAL: no f_star declared)",
+        "C4_D": 14.30415530189674,
+        "f_star": null,
+        "n_null": 1000,
+        "seed": 0,
+        "stratified": true
+      },
+      "MEM": {
+        "check": "MEM memory ratio",
+        "passed": true,
+        "detail": "L_cal/tau_K = 56.4, declared min = 20",
+        "ratio": 56.38988095238095,
+        "min_ratio": 20
+      }
+    },
+    "CH-F": {
+      "schema_version": 2,
+      "kernel_config": {
+        "tau_memory": 336,
+        "lambda_eq": 1.0,
+        "lambda_recovery": 0.005,
+        "lambda_min": 0.1,
+        "theta_scale": 2.0,
+        "g_smooth": 24,
+        "kappa": 0.05
+      },
+      "interface_config": {
+        "driver": "outage_intensity",
+        "normalization": "identity on hourly outage-start count",
+        "reference": "1",
+        "q_floor": "919.53645833333326",
+        "min_context_count": 10,
+        "min_hist": 720,
+        "align_utc": true,
+        "sigma_op_semantics": "valid_CH-L_and_load_above_calibration_q_floor",
+        "trailing_days": null,
+        "trailing_volatility_window": null
+      },
+      "induction": {
+        "epoch_id": "nyiso_chf_induction_v2",
+        "estimator": "expected_profile",
+        "regime": "expanding",
+        "estimator_hash": "f4be8f67922285fba9b87283e707685b14aa53d0d0dc1c695da3d4d5c9bce742"
+      },
+      "n_calibration_bins": 18947,
+      "n_valid_calibration_bins": 18670,
+      "RHO_I": {
+        "check": "RHO_I inductive ratio",
+        "passed": null,
+        "detail": "rho_I = +0.0101 (INFORMATIONAL: no band declared)",
+        "rho_I": 0.01008383734619267,
+        "band": null
+      },
+      "C4": {
+        "check": "C4 informational density",
+        "passed": null,
+        "detail": "C4_D = 1.351 (stratified permutation null, n_null=1000, seed=0; Var(\u039e)=1.154e-03, null Var q05/q50/q95 = 8.053e-04/8.529e-04/9.085e-04) (INFORMATIONAL: no f_star declared)",
+        "C4_D": 1.351420271784084,
+        "f_star": null,
+        "n_null": 1000,
+        "seed": 0,
+        "stratified": true
+      },
+      "MEM": {
+        "check": "MEM memory ratio",
+        "passed": true,
+        "detail": "L_cal/tau_K = 56.4, declared min = 20",
+        "ratio": 56.38988095238095,
+        "min_ratio": 20
+      }
+    }
+  }
+}
