@@ -27,24 +27,28 @@ class GateDecision:
 
 
 def rolling_ac1(values: np.ndarray, window: int = 336) -> np.ndarray:
-    """Causal rolling lag-1 correlation over a complete finite window."""
+    """Causal rolling lag-1 correlation using pairwise-complete clock hours."""
 
     series = pd.Series(np.asarray(values, dtype=float))
     left = series.shift(1)
     right = series
     pairs = window - 1
-    sum_left = left.rolling(pairs, min_periods=pairs).sum()
-    sum_right = right.rolling(pairs, min_periods=pairs).sum()
-    sum_left2 = (left * left).rolling(pairs, min_periods=pairs).sum()
-    sum_right2 = (right * right).rolling(pairs, min_periods=pairs).sum()
-    sum_cross = (left * right).rolling(pairs, min_periods=pairs).sum()
-    numerator = sum_cross - sum_left * sum_right / pairs
+    pair_valid = left.notna() & right.notna()
+    count = pair_valid.astype(float).rolling(pairs, min_periods=1).sum()
+    pair_left = left.where(pair_valid, 0.0)
+    pair_right = right.where(pair_valid, 0.0)
+    sum_left = pair_left.rolling(pairs, min_periods=1).sum()
+    sum_right = pair_right.rolling(pairs, min_periods=1).sum()
+    sum_left2 = (pair_left * pair_left).rolling(pairs, min_periods=1).sum()
+    sum_right2 = (pair_right * pair_right).rolling(pairs, min_periods=1).sum()
+    sum_cross = (pair_left * pair_right).rolling(pairs, min_periods=1).sum()
+    numerator = sum_cross - sum_left * sum_right / count
     denominator = np.sqrt(
-        (sum_left2 - sum_left * sum_left / pairs)
-        * (sum_right2 - sum_right * sum_right / pairs)
+        (sum_left2 - sum_left * sum_left / count)
+        * (sum_right2 - sum_right * sum_right / count)
     )
     result = (numerator / denominator).to_numpy(dtype=float, copy=True)
-    result[~np.isfinite(result)] = np.nan
+    result[(count.to_numpy() < 2) | ~np.isfinite(result)] = np.nan
     return result
 
 
@@ -76,7 +80,7 @@ def baseline_signals(
     b_triv = intensity.rolling(12, min_periods=12).sum().to_numpy(dtype=float)
     residual = np.asarray(omega, dtype=float) - np.asarray(expected, dtype=float)
     b_var = pd.Series(residual).rolling(
-        336, min_periods=336
+        336, min_periods=2
     ).var(ddof=1).to_numpy(dtype=float)
     b_ac1 = rolling_ac1(residual, window=336)
     cal = slice(0, calibration_end_idx)

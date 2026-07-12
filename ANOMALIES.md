@@ -67,3 +67,20 @@ The correction requests an explicit writable copy from `to_numpy`; a
 regression assertion now requires that buffer to be writable. This is a
 runtime-compatibility fix only. All H3 thresholds, algorithms, partitions,
 seeds and replicate counts remain unchanged.
+
+## 2026-07-12 — H4 CSD baselines required pairwise-complete windows
+
+The third H4 invocation again completed all gates and opened the outcome
+token. Cascade identifiers and the calibration severity P95 were constructed,
+but no comparator, bootstrap, evaluation statistic or classification was
+computed. B-VAR and B-AC1 had been implemented as requiring all 336 clock-hour
+rows to be valid. Given the declared channel gaps, no such calibration window
+existed, so B-COMP could not freeze its calibration ECDF. H3 freezes a
+336-hour clock window and H2 forbids imputation; it does not require discarding
+an otherwise valid window because another hour is absent. The correction uses
+available valid residuals for sample variance and valid adjacent residual
+pairs for AC1 within the same trailing 336 clock hours, with the mathematical
+minimum of two observations/pairs. Missing values are excluded, never filled
+or synthesized. Regression tests compare AC1 with a direct pairwise-complete
+calculation and require causal prefix invariance through explicit gaps. All
+H3 windows, thresholds, partitions, seeds and replicate counts are unchanged.
